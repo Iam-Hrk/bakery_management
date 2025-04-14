@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .product-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            width: 250px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Our Products</h1>
+    {% if user.is_authenticated %}
+          <p>Welcome, {{ user.username }}!</p>
+    {% endif %}
+    <div class="container">
+        <form method="GET" action="{% url 'product_list' %}">
+            <label for="category">Filter by Category:</label>
+            <select name="category" id="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort">
+                <option value="">Default</option>
+                <option value="price_asc" {% if selected_sort == "price_asc" %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_desc" {% if selected_sort == "price_desc" %}selected{% endif %}>Price: High to Low</option>
+                <option value="name_asc" {% if selected_sort == "name_asc" %}selected{% endif %}>Name: A to Z</option>
+                <option value="name_desc" {% if selected_sort == "name_desc" %}selected{% endif %}>Name: Z to A</option>
+            </select>
+        
+            <button type="submit">Apply</button>
+            <p><a href="{% url 'home' %}">Home</a></p>
+        </form>
+        {% if user.is_authenticated %}
+          <a href="{% url 'wishlist' %}">View Wishlist</a>
+          {% else %}
+          <a href="{% url 'login' %}">Login to access Wishlist</a>
+          {% endif %}
+        
+        <!-- Display Products -->
+        <div class="product-list">
+            {% for product in products %}
+                <div class="product" style="color:blue; background-color: lightblue; margin-top:10px; border-radius:10px;">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" width="150">
+                    <p>{{product.product_id}}</p>
+                    {% if user.is_authenticated %}
+                    <div>
+                        {% if product.product_id %}
+                        <a style="color:red;" href="{% url 'add_to_wishlist' product.product_id %}">Add to Wishlist</a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <a href="{% url 'login' %}">Add to Wishlist</a>
+                    {% endif %}
+                    <h3>{{ product.name }}</h3>
+                    <p>Price: ${{ product.price }}</p>
+                    <p>Category: {{ product.category.name }}</p>
+                    {% if user.is_authenticated %}
+                    <div>
+                        <a href="{% url 'add_to_cart' product.product_id %}">Add to Cart</a>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'login' %}">Add to Cart</a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p>No products found.</p>
+            {% endfor %}
+        </div>
+        
+    </div>
+</body>
+</html>
