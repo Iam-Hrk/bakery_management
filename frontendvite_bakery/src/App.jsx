@@ -1,26 +1,37 @@
+import React, { useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import './App.css'
-import Header from './header'
-import Bannercarousel from './bannercarousel'
-import Productslider from './productslider'
-import Staticpage from './staticpage'
-import Products from './products'
-import Footer from './footer'
-import About from './about'
-import Contact from './contact'
+import Header from './components/header'
+import Home from './pages/home'
+import Products from './pages/products'
+import Footer from './components/footer'
+import About from './pages/about'
+import Contact from './pages/contact'
+import Login from './pages/login'
+import Signup from './pages/signup';
+import Profile from './pages/profile';
+import Cart from './pages/cart';
 import Backtotop from './backtotop'
-import { bestprods } from "./data"; //data.js file
+
+
 
 function App() {
 
   return (
     <>
       <Header />
-      <Bannercarousel />
-      <Productslider title="Our Products" products={bestprods}/>
-      <Staticpage />
-      <Products title="Our Best Sellers" products={bestprods}/>
-      <About />
-      <Contact />
+        
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/cart" element={<Cart />} />
+        </Routes>
+        
       <Footer />
       <Backtotop />
     </>

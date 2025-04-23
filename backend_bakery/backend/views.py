@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import product, Category, Wishlist, Cart, Order, OrderItem, banner
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import Product, Category, Wishlist, CartItem, Order, OrderItem, banner
 from django.contrib.auth import authenticate, login, logout, get_user_model 
 from django.contrib.auth.decorators import login_required
-from .utils import get_cart_from_session
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .serializers import ProductSerializer, CategorySerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status, permissions
+from .serializers import ProductSerializer, CategorySerializer, BannerSerializer, SignupSerializer, LoginSerializer, CartItemSerializer, AddToCartSerializer
 # email
 from django.core.mail import send_mail
 from django.conf import settings
@@ -17,11 +19,12 @@ def home(request):
     banners = banner.objects.all()
     return render(request, 'home.html',{'banners':banners})
 
-def product_list(request):
-    category_id = request.GET.get('category', None)
-    sort_by = request.GET.get('sort', None) 
+@api_view(['GET'])
+def product_list_api(request):
+    category_id = request.GET.get('category')
+    sort_by = request.GET.get('sort')
 
-    products = product.objects.all()
+    products = Product.objects.all()
 
     if category_id:
         products = products.filter(category_id=category_id)
@@ -35,72 +38,93 @@ def product_list(request):
     elif sort_by == "name_desc":
         products = products.order_by("-name")
 
+    serializer = ProductSerializer(products, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def category_list_api(request):
     categories = Category.objects.all()
+    serializer = CategorySerializer(categories, many=True)
+    return Response(serializer.data)
 
-    return render(request, 'product_list.html', {
-        'products': products,
-        'categories': categories,
-        'selected_category': category_id,
-        'selected_sort': sort_by
-    })
+@api_view(['GET'])
+def bestseller_products_api(request):
+    products = Product.objects.filter(isbestseller=True)
+    serializer = ProductSerializer(products, many=True)
+    return Response(serializer.data)
 
+@api_view(['GET'])
+def banner_api(request):
+    banners = banner.objects.all()
+    serializer = BannerSerializer(banners, many=True)
+    return Response(serializer.data)
 # login and registration
 
 
-User = get_user_model()  # Get the custom user model
+User = get_user_model()
 
-def signup_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        mobile_number = request.POST.get('mobile_number')
+# Utility function to create tokens
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
 
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email is already taken')
-            return redirect('signup')
+@api_view(['POST'])
+def signup_api(request):
+    serializer = SignupSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        tokens = get_tokens_for_user(user)
+        return Response({
+            'message': 'Account created successfully',
+            'tokens': tokens
+        }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(username=username, email=email, password=password, mobile_number=mobile_number)
-        user.save()
-        messages.success(request, 'Account created successfully')
-        return redirect('login')
-    
-    return render(request, 'signup.html')
-
-
-def login_view(request):
-    if request.method == 'POST':
-        print(f"Debug: POST data = {request.POST}")  # Print all POST data
-
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        print(f"Debug: Username = {username}, Password = {password}")  # Debugging
-
+@api_view(['POST'])
+def login_api(request):
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
         user = authenticate(request, username=username, password=password)
 
+        print(f"Debug: User = {user}")
+
         if user is not None:
-            print(f"User {user} authenticated successfully!")  # Debugging
-            login(request, user)
-            return redirect('home')
+            # login(request, user) #it is not needed in token based authentication
+            tokens = get_tokens_for_user(user)
+            return Response({
+                'message': 'Login successful',
+                'tokens': tokens
+            }, status=status.HTTP_200_OK)
         else:
-            print("Authentication failed!")  # Debugging
-            messages.error(request, 'Invalid credentials')
-            return redirect('login')
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    return render(request, 'login.html')
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def logout_view(request):
+@api_view(['POST'])
+def logout_api(request):
     logout(request)
-    messages.success(request,'Logged out successfully')
-    return redirect('login')
+    return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_user_profile(request):
+    user = request.user
+    return Response({
+        'username': user.username,
+        'email': user.email,  # Include other user details if needed
+        'mobile_number': user.mobile_number,
+    })
 # wish list
 
 @login_required
 def add_to_wishlist(request, product_id):
     # Use product_id instead of id in the query
-    product_obj = get_object_or_404(product, product_id=product_id)
+    product_obj = get_object_or_404(Product, product_id=product_id)
     wishlist_item, created = Wishlist.objects.get_or_create(user=request.user, product=product_obj)
 
     if created:
@@ -112,7 +136,7 @@ def add_to_wishlist(request, product_id):
 
 @login_required
 def remove_from_wishlist(request, product_id):
-    Product = get_object_or_404(product, product_id=product_id)
+    Product = get_object_or_404(Product, product_id=product_id)
     wishlist_item = Wishlist.objects.filter(user=request.user, product=Product).first()
 
     if wishlist_item:
@@ -129,74 +153,113 @@ def wishlist_view(request):
 
 # cart
 
-@login_required
-def cart_view(request):
-    cart_items = Cart.objects.filter(user=request.user)  # Fetch from database
+# @login_required
+# def cart_view(request):
+#     cart_items = Cart.objects.filter(user=request.user)  # Fetch from database
 
-    cart = {}
-    total_price = 0  # Initialize total price
+#     cart = {}
+#     total_price = 0  # Initialize total price
 
-    for item in cart_items:
-        product = item.product
-        cart[item.product_id] = {
-            'name': product.name,
-            'price': product.price,
-            'quantity': item.quantity,
-            'total_price': product.price * item.quantity,
-        }
-        total_price += product.price * item.quantity  # Accumulate total price
+#     for item in cart_items:
+#         product = item.product
+#         cart[item.product_id] = {
+#             'name': product.name,
+#             'price': product.price,
+#             'quantity': item.quantity,
+#             'total_price': product.price * item.quantity,
+#         }
+#         total_price += product.price * item.quantity  # Accumulate total price
 
-    return render(request, 'cart.html', {'cart': cart, 'total_price': total_price})
+#     return render(request, 'cart.html', {'cart': cart, 'total_price': total_price})
 
-@login_required
-def add_to_cart(request, product_id):
-    """ Add a product to the cart """
-    Product = get_object_or_404(product, product_id=product_id)
+# @login_required
+# def add_to_cart(request, product_id):
+#     """ Add a product to the cart """
+#     Product = get_object_or_404(Product, product_id=product_id)
     
-    # Check if product is already in the cart
-    cart_item, created = Cart.objects.get_or_create(user=request.user, product=Product)
+#     # Check if product is already in the cart
+#     cart_item, created = Cart.objects.get_or_create(user=request.user, product=Product)
     
-    if not created:
-        # If product is already in the cart, increase the quantity
-        cart_item.quantity += 1
-        cart_item.save()
-        messages.success(request, "Quantity increased in the cart!")
-    else:
-        messages.success(request, "Item added to cart!")
+#     if not created:
+#         # If product is already in the cart, increase the quantity
+#         cart_item.quantity += 1
+#         cart_item.save()
+#         messages.success(request, "Quantity increased in the cart!")
+#     else:
+#         messages.success(request, "Item added to cart!")
 
-    return redirect('cart')
+#     return redirect('cart')
 
-@login_required
-def remove_from_cart(request, product_id):
-    """ Remove a product from the cart """
-    Product = get_object_or_404(product, product_id=product_id)
-    cart_item = Cart.objects.filter(user=request.user, product=Product)
+# @login_required
+# def remove_from_cart(request, product_id):
+#     """ Remove a product from the cart """
+#     Product = get_object_or_404(Product, product_id=product_id)
+#     cart_item = Cart.objects.filter(user=request.user, product=Product)
     
-    if cart_item.exists():
-        cart_item.delete()
-        messages.success(request, "Item removed from cart!")
-    else:
-        messages.error(request, "Item not found in cart!")
+#     if cart_item.exists():
+#         cart_item.delete()
+#         messages.success(request, "Item removed from cart!")
+#     else:
+#         messages.error(request, "Item not found in cart!")
 
-    return redirect('cart')
+#     return redirect('cart')
 
-@login_required
-def update_cart_quantity(request, product_id):
-    """ Update the quantity of a product in the cart """
-    Product = get_object_or_404(product, product_id=product_id)
+# @login_required
+# def update_cart_quantity(request, product_id):
+#     """ Update the quantity of a product in the cart """
+#     Product = get_object_or_404(Product, product_id=product_id)
 
-    if request.method == "POST":
-        quantity = request.POST.get('quantity', 1)  # Get quantity from POST data
-        cart_item = Cart.objects.filter(user=request.user, product=Product)
+#     if request.method == "POST":
+#         quantity = request.POST.get('quantity', 1)  # Get quantity from POST data
+#         cart_item = Cart.objects.filter(user=request.user, product=Product)
 
-        if cart_item.exists():
-            cart_item.update(quantity=quantity)
-            messages.success(request, "Cart updated!")
+#         if cart_item.exists():
+#             cart_item.update(quantity=quantity)
+#             messages.success(request, "Cart updated!")
+#         else:
+#             messages.error(request, "Item not found in cart!")
+
+#     return redirect('cart')
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def cart_items(request):
+    items = CartItem.objects.filter(user=request.user)
+    serializer = CartItemSerializer(items, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_to_cart(request):
+    serializer = AddToCartSerializer(data=request.data)
+    if serializer.is_valid():
+        product_id = serializer.validated_data['product_id']
+        quantity = serializer.validated_data['quantity']
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+
+        item, created = CartItem.objects.get_or_create(user=request.user, product=product)
+        if not created:
+            item.quantity += quantity
         else:
-            messages.error(request, "Item not found in cart!")
+            item.quantity = quantity
+        item.save()
+        return Response({"message": "Item added to cart"})
+    
+    return Response(serializer.errors, status=400)
 
-    return redirect('cart')
 
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def remove_from_cart(request, item_id):
+    try:
+        item = CartItem.objects.get(id=item_id, user=request.user)
+        item.delete()
+        return Response({"message": "Item removed from cart"})
+    except CartItem.DoesNotExist:
+        return Response({"error": "Item not found"}, status=404)
 # email
 # def test_email(request):
 #     subject = 'Test Email from Django'
@@ -212,7 +275,7 @@ def update_cart_quantity(request, product_id):
 @login_required
 def place_order_view(request):
     user = request.user
-    cart_items = Cart.objects.filter(user=user)
+    cart_items = CartItem.objects.filter(user=user)
 
     if not cart_items.exists():
         messages.warning(request, "Your cart is empty.")

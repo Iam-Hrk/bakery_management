@@ -123,6 +123,7 @@ export const bestprods = [
         color:'purple',
         img: b1 ,
         alt:'pic1',
+        link:'#',
     },
     {
         title:'Pazham pori',
@@ -130,6 +131,7 @@ export const bestprods = [
         color:'orange',
         img: b2 ,
         alt:'b2',
+        link:'#',
     },
     {
         title:'Cake',
@@ -137,5 +139,6 @@ export const bestprods = [
         color:'pink',
         img: b3 ,
         alt:'b3',
+        link:'#',
     }
 ]

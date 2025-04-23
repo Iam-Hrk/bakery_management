@@ -5,16 +5,18 @@ from django.contrib.auth import get_user_model
 # Create your models here.
 class Category(models.Model):
     name=models.CharField(max_length=100)
+    image=models.ImageField(upload_to='category/',null=True)
     def __str__(self):
         return self.name
     
-class product(models.Model):
+class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     name=models.CharField(max_length=100)
     price=models.FloatField()
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
     description=models.TextField()
     image=models.ImageField(upload_to='products/')
+    isbestseller=models.BooleanField(default=False)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -23,6 +25,9 @@ class product(models.Model):
 
 class banner(models.Model):
     image=models.ImageField(upload_to='banners/')
+    title=models.CharField(max_length=100, null=True)
+    title_color=models.CharField(max_length=30, null=True, blank=True)
+    description=models.TextField(null=True, blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
 
@@ -63,7 +68,7 @@ User = get_user_model()
 
 class Wishlist(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
-    product=models.ForeignKey(product,on_delete=models.CASCADE)
+    product=models.ForeignKey(Product,on_delete=models.CASCADE)
     added_at=models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -74,13 +79,16 @@ class Wishlist(models.Model):
 
 User = get_user_model()
     
-class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
-    product = models.ForeignKey(product, on_delete=models.CASCADE, related_name='cart_items')
+class CartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 
+    class Meta:
+        unique_together = ('user', 'product')
+
     def __str__(self):
-        return f'{self.user} - {self.product.name}'
+        return f"{self.quantity} of {self.product.name}"
 
 
 User = get_user_model()
