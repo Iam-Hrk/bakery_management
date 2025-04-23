@@ -1,0 +1,23 @@
+###############################################################################
+#  ⭕  ROOT‑LEVEL ignores (apply everywhere)
+###############################################################################
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Logs & dumps
+*.log
+*.pid
+*.seed
+*.backup
+*.sqlite3-journal
+*.eslintcache
+
+# Python virtual‑envs (common names)
+venv/
+env/
+.python-version          # pyenv
+Pipfile.lock             # generated — track only if you really want to pin
