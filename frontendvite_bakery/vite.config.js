@@ -8,5 +8,6 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+  base: '/bakery_management/',
   assetsInclude: ['**/*.PNG', '**/*.JPG'],
 })

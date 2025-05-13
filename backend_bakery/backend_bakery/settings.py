@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +28,10 @@ SECRET_KEY = 'django-insecure-$t4=c_rlp6c+*hx@bdmdis51ig5hc+@y2&ldpx+#6r12q+qgu-
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+DEBUG = 'RENDER' not in os.environ
+
+ALLOWED_HOSTS = ['*']  # Temporarily allow all
 
 
 # Application definition
@@ -68,7 +73,8 @@ REST_FRAMEWORK = {
 # }
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  # React app URL
+    'http://localhost:5173',
+    "https://Iam-Hrk.github.io",  # React app URL
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -176,3 +182,10 @@ EMAIL_HOST_USER = 'hrithikrahul2001@gmail.com'
 EMAIL_HOST_PASSWORD = 'rjovifsuqjaebuaw'  # Use App Password if 2FA is enabled
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_EMAIL = 'hrithiksssit19cs013@gmail.com'
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+    )
+}
