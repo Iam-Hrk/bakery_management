@@ -32,7 +32,7 @@ SECRET_KEY = 'django-insecure-$t4=c_rlp6c+*hx@bdmdis51ig5hc+@y2&ldpx+#6r12q+qgu-
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://bakery-management-2.onrender.com']  # Change this after deployment
+ALLOWED_HOSTS = ['*']  # Change this after deployment
 CSRF_TRUSTED_ORIGINS = ['https://backend_bakery.onrender.com']
 
 
