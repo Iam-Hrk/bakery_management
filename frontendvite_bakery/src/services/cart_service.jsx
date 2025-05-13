@@ -28,4 +28,13 @@ const removeFromCart = async (itemId) => {
   return response.data;
 };
 
-export default { getCartItems, addToCart, removeFromCart };
+const updateCartQuantity = async (itemId, quantity) => {
+  const response = await axios.patch(
+    `${API_BASE_URL}/cart/update/`,
+    { item_id: itemId, quantity },
+    { headers: authHeaders() }
+  );
+  return response.data;
+};
+
+export default { getCartItems, addToCart, removeFromCart, updateCartQuantity };

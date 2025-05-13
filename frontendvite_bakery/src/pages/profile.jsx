@@ -3,6 +3,7 @@ import { getUserProfile } from '../services/profileService';
 import { logoutUser } from '../services/loginsignup_service';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -18,7 +19,7 @@ const Profile = () => {
         console.log('Fetched userData:', userData);
         setUser(userData);
       } catch (err) {
-        setError('Failed to load user data');
+        setError('Failed to load user data or session expired. Please login again.');
       } finally {
         setLoading(false);
       }
@@ -34,7 +35,11 @@ const Profile = () => {
   };
 
   if (loading) return <div className="text-center mt-10">Loading...</div>;
-  if (error) return <div className="text-center text-red-500 mt-10">{error}</div>;
+  if (error) return <div className="text-center text-red-500 mt-10 mb-10">{error} 
+  <button className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">
+    <Link to="/login" className=" hover:text-gray-300">Login</Link>
+  </button>
+  </div>;
 
   return (
     <div className="min-h-auto flex flex-col items-center justify-center px-4 py-10 bg-gray-50">
@@ -86,9 +91,9 @@ const Profile = () => {
             </div>
 
             <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-8">
-              <button className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+              {/* <button className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
                 Update
-              </button>
+              </button> */}
               <button
                 onClick={handleLogout}
                 className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
@@ -98,6 +103,9 @@ const Profile = () => {
             </div>
           </div>
         </div>
+      </div>
+      <div className="myorder mt-5">
+        <h3>my orders <Link to="/orders" className="underline hover:text-gray-300"> click here</Link></h3>
       </div>
     </div>
   );

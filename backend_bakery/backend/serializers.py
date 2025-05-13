@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, banner, CartItem
+from .models import Product, Category, banner, CartItem, Wishlist, Order, OrderItem
 from django.contrib.auth import get_user_model
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -50,3 +50,29 @@ class CartItemSerializer(serializers.ModelSerializer):
 class AddToCartSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
+
+
+class WishlistSerializer(serializers.ModelSerializer):
+    product_name = serializers.ReadOnlyField(source='product.name')
+    price = serializers.ReadOnlyField(source='product.price')
+    image = serializers.ImageField(source='product.image')
+
+    class Meta:
+        model = Wishlist
+        fields = ['id', 'product', 'product_name', 'price', 'image']
+
+class AddToWishlistSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['product_name', 'quantity', 'price']
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'user', 'total_price', 'ordered_at', 'items']
+        read_only_fields = ['user', 'ordered_at', 'items']

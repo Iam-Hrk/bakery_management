@@ -32,7 +32,7 @@ const Backtotop = () => {
           className="fixed bottom-6 w-10 h-10 text-center items-center justify-center flex right-6 z-50 p-3 rounded-full bg-teal-500 text-white shadow-md hover:bg-teal-600 transition duration-300"
           aria-label="Back to Top"
         >
-          <i class="bi bi-arrow-up"></i>
+          <i className="bi bi-arrow-up"></i>
         </button>
       )
     );

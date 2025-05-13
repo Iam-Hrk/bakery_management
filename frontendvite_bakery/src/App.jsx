@@ -11,7 +11,9 @@ import Login from './pages/login'
 import Signup from './pages/signup';
 import Profile from './pages/profile';
 import Cart from './pages/cart';
+import Wishlist from './pages/wishlist';
 import Backtotop from './backtotop'
+import Orders from './pages/orders';
 
 
 
@@ -30,6 +32,8 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/orders" element={<Orders />} />
         </Routes>
         
       <Footer />

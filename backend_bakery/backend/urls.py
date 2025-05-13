@@ -3,7 +3,6 @@ from django.urls import path
 
 urlpatterns = [ 
     path('', views.home, name='home'),
-    # path('product/', views.product_list, name='product_list'),
     path('api/products/', views.product_list_api, name='product-list-api'),
     path('api/categories/', views.category_list_api, name='category-list-api'),
     path('api/products/bestsellers/', views.bestseller_products_api, name='bestseller-products-api'),
@@ -14,17 +13,16 @@ urlpatterns = [
     path('api/logout/', views.logout_api, name='api-logout'),
     path('api/profile/', views.get_user_profile, name='user-profile'),
     # wishlist
-    path('wishlist/', views.wishlist_view, name='wishlist'),
-    path('wishlist/add/<int:product_id>/', views.add_to_wishlist, name='add_to_wishlist'),
-    path('wishlist/remove/<int:product_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
+    path('api/wishlist/', views.wishlist_view, name='wishlist'),
+    path('api/wishlist/add/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('api/wishlist/remove/<int:item_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
     # cart
     path('api/cart/', views.cart_items),
     path('api/cart/add/', views.add_to_cart),
     path('api/cart/remove/<int:item_id>/', views.remove_from_cart),
-    # path('cart/update/<int:product_id>/<int:quantity>/', views.update_cart_quantity, name='update_cart'),
-    # path('cart/update/<int:product_id>/', views.update_cart_quantity, name='update_cart'),
-    # email
-    path('place-order/', views.place_order_view, name='place_order'),
-    path('my-orders/', views.ordered_page_view, name='ordered_page'),
+    path('api/cart/update/', views.update_cart_quantity),
+    # oders
+    path('api/place-order/', views.place_order_api, name='api_place_order'),
+    path('api/my-orders/', views.user_orders_api, name='my-orders-api'),
 
 ]

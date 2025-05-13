@@ -55,8 +55,16 @@ const Header = () => {
           </ul>
         </div>
         <div className="wishcart absolute right-3 gap-5 flex items-center">
-        <Link to="/cart"><i className="bi bi-cart2 cursor-pointer hover:text-blue-300"></i></Link>
-        <i className="bi bi-heart cursor-pointer hover:text-red-300"></i>
+        {isAuthenticated ? (
+          <Link to="/cart"><i className="bi bi-cart2 cursor-pointer hover:text-blue-300"></i></Link>
+        ):(
+          <Link to="/login"><i className="bi bi-cart2 cursor-pointer hover:text-blue-300"></i></Link>
+        )}
+        {isAuthenticated ? (
+        <Link to="/wishlist"><i className="bi bi-heart cursor-pointer hover:text-red-300"></i></Link>
+        ):(
+          <Link to="/login"><i className="bi bi-heart cursor-pointer hover:text-red-300"></i></Link>
+        )}
         {isAuthenticated ? (
           <Link to="/profile"><i className="bi bi-person-check cursor-pointer hover:text-red-300 text-xl"></i></Link>
         ):(
@@ -69,10 +77,10 @@ const Header = () => {
       {isOpen && (
         <div className="md:hidden mt-4">
           <ul className="flex flex-col items-center gap-4">
-            <li><a href="#" className="hover:text-blue-300">Home</a></li>
-            <li><a href="#" className="hover:text-blue-300">About Us</a></li>
-            <li><a href="#" className="hover:text-blue-300">Products</a></li>
-            <li><a href="#" className="hover:text-blue-300">Contact Us</a></li>
+            <li><Link  className="hover:text-blue-300" to="/">Home</Link></li>
+            <li><Link  className="hover:text-blue-300" to="/about">About</Link></li>
+            <li><Link  className="hover:text-blue-300" to="/products">Products</Link></li>
+            <li><Link  className="hover:text-blue-300" to="/contact">Contact</Link></li>
           </ul>
         </div>
       )}
