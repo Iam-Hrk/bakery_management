@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,16 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$t4=c_rlp6c+*hx@bdmdis51ig5hc+@y2&ldpx+#6r12q+qgu-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
 
-# dont remove its base!!!!!!!!!!!!!!!!!!!!!!!
-# DEBUG = True
-# ALLOWED_HOSTS = []
-
-DEBUG = False
-
-ALLOWED_HOSTS = ['*']  # Change this after deployment
-CSRF_TRUSTED_ORIGINS = ['https://backend_bakery.onrender.com']
-
+ALLOWED_HOSTS = []
 
 
 
@@ -51,14 +43,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'whitenoise.runserver_nostatic',  # before django.contrib.staticfiles
-
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -160,8 +149,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -187,7 +174,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'  # or your email provider's SMTP server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_PASS')  # Use App Password if 2FA is enabled
+EMAIL_HOST_USER = 'hrithikrahul2001@gmail.com'
+EMAIL_HOST_PASSWORD = 'rjovifsuqjaebuaw'  # Use App Password if 2FA is enabled
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-ADMIN_EMAIL = config('ADMIN_EMAIL')
+ADMIN_EMAIL = 'hrithiksssit19cs013@gmail.com'
+
